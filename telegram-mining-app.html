@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>GUPPY COIN - Mine</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0c0f;--card:#111418;--card2:#161b22;
+  --orange:#f97316;--og:rgba(249,115,22,0.18);--og2:rgba(249,115,22,0.08);
+  --green:#22c55e;--gg:rgba(34,197,94,0.15);
+  --blue:#3b82f6;--bb:rgba(59,130,246,0.15);
+  --yellow:#fbbf24;--yy:rgba(251,191,36,0.15);
+  --text:#f1f5f9;--muted:#64748b;--dim:#94a3b8;
+  --border:rgba(249,115,22,0.15);--b2:rgba(255,255,255,0.06);
+  --red:#ef4444;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative}
+
+/* HEADER */
+.header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(10,12,15,.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:50}
+.logo{font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--orange);letter-spacing:2px}
+.header-bal{display:flex;flex-direction:column;align-items:flex-end}
+.header-bal span{font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--orange);font-weight:700;letter-spacing:1px}
+.header-bal small{font-size:.6rem;color:var(--muted);letter-spacing:1px}
+.avatar{width:34px;height:34px;background:linear-gradient(135deg,var(--orange),#ea580c);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;box-shadow:0 0 12px var(--og)}
+
+/* SCROLL CONTENT */
+.content{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 14px 0;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+.content::-webkit-scrollbar{display:none}
+
+/* BOTTOM NAV */
+.nav{flex-shrink:0;display:flex;border-top:1px solid var(--b2);background:rgba(10,12,15,.98);backdrop-filter:blur(10px)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 12px;cursor:pointer;transition:all .2s;border:none;background:none;color:var(--muted)}
+.nav-item.active{color:var(--orange)}
+.nav-item span{font-size:1.3rem;line-height:1}
+.nav-item small{font-family:'Orbitron',sans-serif;font-size:.5rem;letter-spacing:1px}
+
+/* VIEWS */
+.view{display:none;flex-direction:column;gap:12px;animation:fadeIn .2s ease}
+.view.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* MINING VIEW */
+.energy-bar-wrap{background:var(--card);border:1px solid var(--b2);border-radius:12px;padding:12px 14px}
+.energy-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);letter-spacing:1px;margin-bottom:8px}
+.energy-label span{color:var(--green);font-family:'Orbitron',sans-serif;font-size:.72rem}
+.energy-bar{height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden}
+.energy-fill{height:100%;background:linear-gradient(90deg,var(--green),#4ade80);border-radius:99px;transition:width .5s ease;box-shadow:0 0 8px rgba(34,197,94,.5)}
+
+.coin-wrap{display:flex;justify-content:center;padding:10px 0}
+.coin-btn{width:190px;height:190px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fbbf24,#f97316 50%,#ea580c);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 0 0 6px rgba(249,115,22,.15),0 0 0 12px rgba(249,115,22,.07),0 8px 40px rgba(249,115,22,.4);transition:transform .08s,box-shadow .08s;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.coin-btn:active{transform:scale(0.92);box-shadow:0 0 0 4px rgba(249,115,22,.2),0 4px 20px rgba(249,115,22,.3)}
+.coin-inner{display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none}
+.coin-icon{font-size:3.5rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+.coin-label{font-family:'Orbitron',sans-serif;font-size:.65rem;color:rgba(255,255,255,.8);letter-spacing:2px}
+.coin-shine{position:absolute;top:20%;left:25%;width:30%;height:15%;background:rgba(255,255,255,.3);border-radius:50%;transform:rotate(-30deg);pointer-events:none}
+
+.tap-float{position:fixed;pointer-events:none;font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:700;color:var(--orange);text-shadow:0 0 10px var(--orange);z-index:999;animation:floatUp .9s ease forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-70px) scale(.8)}}
+
+.mine-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mine-stat{background:var(--card);border:1px solid var(--b2);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.mine-stat label{font-size:.65rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.mine-stat span{font-family:'Orbitron',sans-serif;font-size:.95rem;color:var(--orange)}
+.mine-stat small{font-size:.7rem;color:var(--dim)}
+
+.boost-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px}
+.boost-info{display:flex;flex-direction:column;gap:2px}
+.boost-info strong{font-size:.85rem;letter-spacing:.5px}
+.boost-info small{font-size:.72rem;color:var(--muted)}
+.btn-boost{padding:8px 16px;background:var(--og);border:1.5px solid var(--orange);border-radius:20px;color:var(--orange);font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.btn-boost:hover{background:var(--orange);color:#fff}
+
+/* WALLET VIEW */
+.wallet-hero{background:linear-gradient(135deg,rgba(249,115,22,.18),rgba(249,115,22,.04));border:1px solid var(--orange);border-radius:18px;padding:24px 20px;text-align:center}
+.wallet-hero small{color:var(--muted);font-size:.7rem;letter-spacing:2px;text-transform:uppercase}
+.wallet-hero h1{font-family:'Orbitron',sans-serif;font-size:2rem;margin:6px 0 4px;text-shadow:0 0 20px var(--og)}
+.wallet-hero h1 em{font-size:1rem;color:var(--muted);font-style:normal}
+.wallet-hero p{color:var(--orange);font-size:.85rem}
+.wallet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.w-action{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;background:var(--card);border:1px solid var(--b2);border-radius:14px;cursor:pointer;transition:all .2s}
+.w-action:hover{border-color:var(--orange);background:var(--og2)}
+.w-action span{font-size:1.6rem}
+.w-action small{font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:1px;color:var(--dim)}
+.tx-list{background:var(--card);border:1px solid var(--b2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:0}
+.tx-head{font-family:'Orbitron',sans-serif;font-size:.65rem;letter-spacing:2px;color:var(--muted);margin-bottom:10px}
+.tx-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b2)}
+.tx-item:last-child{border-bottom:none}
+.tx-left{display:flex;align-items:center;gap:10px}
+.tx-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.tx-icon.earn{background:var(--gg);border:1px solid rgba(34,197,94,.3)}
+.tx-icon.send{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2)}
+.tx-icon.boost{background:var(--bb);border:1px solid rgba(59,130,246,.2)}
+.tx-desc{display:flex;flex-direction:column;gap:2px}
+.tx-desc strong{font-size:.85rem}
+.tx-desc small{font-size:.7rem;color:var(--muted)}
+.tx-amount{font-family:'Orbitron',sans-serif;font-size:.85rem;text-align:right}
+.tx-amount.plus{color:var(--green)}
+.tx-amount.minus{color:var(--red)}
+
+/* BOOST VIEW */
+.page-title{font-family:'Orbitron',sans-serif;font-size:.8rem;letter-spacing:3px;color:var(--orange);padding-bottom:10px;border-bottom:1px solid var(--border)}
+.boost-grid{display:flex;flex-direction:column;gap:10px}
+.boost-card{background:var(--card);border:1px solid var(--b2);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.boost-card:hover{border-color:var(--orange)}
+.boost-card.owned{border-color:var(--green);pointer-events:none}
+.boost-card-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.boost-card-info{flex:1}
+.boost-card-info strong{display:block;font-size:.9rem;margin-bottom:2px}
+.boost-card-info p{font-size:.75rem;color:var(--dim);margin-bottom:6px}
+.boost-card-info .cost{font-family:'Orbitron',sans-serif;font-size:.75rem;color:var(--orange)}
+.boost-card-info .cost.owned-text{color:var(--green)}
+.boost-lvl{display:flex;gap:4px}
+.lvl-dot{width:6px;height:6px;border-radius:50%;background:var(--b2)}
+.lvl-dot.filled{background:var(--orange)}
+.lvl-dot.filled.owned{background:var(--green)}
+
+/* TASKS VIEW */
+.task-section{font-family:'Orbitron',sans-serif;font-size:.65rem;letter-spacing:2px;color:var(--muted);margin-bottom:6px}
+.task-card{background:var(--card);border:1px solid var(--b2);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.task-card:hover{border-color:var(--orange)}
+.task-card.done{border-color:rgba(34,197,94,.3);pointer-events:none}
+.task-card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:var(--og2);border:1px solid var(--border)}
+.task-card.done .task-card-icon{background:var(--gg);border-color:rgba(34,197,94,.3)}
+.task-info{flex:1}
+.task-info strong{display:block;font-size:.88rem;margin-bottom:2px}
+.task-info small{font-size:.73rem;color:var(--dim)}
+.task-reward{font-family:'Orbitron',sans-serif;font-size:.78rem;color:var(--orange);text-align:right}
+.task-card.done .task-reward{color:var(--green)}
+
+/* FRIENDS VIEW */
+.ref-hero{background:linear-gradient(135deg,rgba(249,115,22,.12),rgba(249,115,22,.03));border:1px solid var(--border);border-radius:18px;padding:22px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.ref-hero h2{font-size:1.1rem;font-weight:700}
+.ref-hero p{color:var(--muted);font-size:.82rem;line-height:1.5}
+.ref-code-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.ref-code-row{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--b2);border-radius:10px;padding:12px 14px}
+.ref-code{font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--orange);letter-spacing:2px}
+.btn-copy{padding:7px 14px;background:var(--og);border:1.5px solid var(--orange);border-radius:8px;color:var(--orange);font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.btn-copy:active{background:var(--orange);color:#fff}
+.btn-invite{padding:14px;background:var(--orange);border:none;border-radius:12px;color:#fff;font-family:'Orbitron',sans-serif;font-size:.75rem;letter-spacing:2px;cursor:pointer;width:100%;font-weight:700;box-shadow:0 4px 20px var(--og)}
+.friends-list{background:var(--card);border:1px solid var(--b2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:0}
+.friend-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b2)}
+.friend-item:last-child{border-bottom:none}
+.friend-left{display:flex;align-items:center;gap:10px}
+.friend-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#ea580c);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+.friend-info strong{display:block;font-size:.85rem}
+.friend-info small{font-size:.7rem;color:var(--muted)}
+.friend-earn{font-family:'Orbitron',sans-serif;font-size:.78rem;color:var(--green)}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(22,27,34,.95);border:1px solid var(--orange);border-radius:10px;padding:10px 20px;font-size:.82rem;color:var(--text);opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none;backdrop-filter:blur(10px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:22px 22px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal h3{font-family:'Orbitron',sans-serif;font-size:.85rem;letter-spacing:2px;color:var(--orange);text-align:center}
+.modal-close{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:4px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:.72rem;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.field input,.field select{padding:12px 16px;background:var(--card2);border:1.5px solid var(--b2);border-radius:11px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:.95rem;outline:none;transition:border .2s}
+.field input:focus{border-color:var(--orange)}
+.btn-primary{padding:14px;background:var(--orange);border:none;border-radius:12px;color:#fff;font-family:'Orbitron',sans-serif;font-size:.75rem;letter-spacing:2px;cursor:pointer;font-weight:700;width:100%;box-shadow:0 4px 20px var(--og);transition:opacity .2s}
+.btn-primary:active{opacity:.85}
+
+/* LEADERBOARD badge */
+.rank-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--b2)}
+.rank-row:last-child{border-bottom:none}
+.rank-num{font-family:'Orbitron',sans-serif;font-size:.8rem;width:24px;color:var(--muted)}
+.rank-num.top{color:var(--yellow)}
+.rank-left{display:flex;align-items:center;gap:10px}
+.rank-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#ea580c);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}
+.rank-info strong{display:block;font-size:.85rem}
+.rank-info small{font-size:.7rem;color:var(--muted)}
+.rank-coins{font-family:'Orbitron',sans-serif;font-size:.8rem;color:var(--orange)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">⚡ GUPPY</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="header-bal">
+      <span id="hdr-bal">0</span>
+      <small>GUPPY COIN</small>
+    </div>
+    <div class="avatar" id="user-avatar">G</div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content" id="content">
+
+  <!-- ===== MINE VIEW ===== -->
+  <div class="view active" id="view-mine">
+
+    <!-- Energy Bar -->
+    <div class="energy-bar-wrap">
+      <div class="energy-label">
+        <span>⚡ ENERGI</span>
+        <span id="energy-text">500 / 500</span>
+      </div>
+      <div class="energy-bar">
+        <div class="energy-fill" id="energy-fill" style="width:100%"></div>
+      </div>
+    </div>
+
+    <!-- Coin Button -->
+    <div class="coin-wrap">
+      <button class="coin-btn" id="coin-btn" onclick="handleTap(event)">
+        <div class="coin-inner">
+          <div class="coin-icon">🪙</div>
+          <div class="coin-label">TAP TO MINE</div>
+        </div>
+        <div class="coin-shine"></div>
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="mine-stats">
+      <div class="mine-stat">
+        <label>Per Tap</label>
+        <span id="per-tap">+1</span>
+        <small>koin / tap</small>
+      </div>
+      <div class="mine-stat">
+        <label>Per Jam</label>
+        <span id="per-hour">+120</span>
+        <small>koin / jam</small>
+      </div>
+      <div class="mine-stat">
+        <label>Total Tap</label>
+        <span id="total-taps">0</span>
+        <small>tap hari ini</small>
+      </div>
+      <div class="mine-stat">
+        <label>Level</label>
+        <span id="user-level">1</span>
+        <small id="level-label">Pemula</small>
+      </div>
+    </div>
+
+    <!-- Auto Mine Boost Banner -->
+    <div class="boost-row">
+      <div class="boost-info">
+        <strong>⚙️ Auto Miner</strong>
+        <small id="auto-status">Tidak aktif — beli di Boost</small>
+      </div>
+      <button class="btn-boost" onclick="showView('boosts')">UPGRADE</button>
+    </div>
+
+  </div>
+
+  <!-- ===== WALLET VIEW ===== -->
+  <div class="view" id="view-wallet">
+    <div class="wallet-hero">
+      <small>TOTAL SALDO</small>
+      <h1 id="wallet-bal">0 <em>GPC</em></h1>
+      <p>≈ <span id="wallet-usd">$0.00</span> USD</p>
+    </div>
+    <div class="wallet-actions">
+      <div class="w-action" onclick="openWithdraw()">
+        <span>📤</span>
+        <small>WITHDRAW</small>
+      </div>
+      <div class="w-action" onclick="openDeposit()">
+        <span>📥</span>
+        <small>DEPOSIT</small>
+      </div>
+      <div class="w-action" onclick="openSend()">
+        <span>↗️</span>
+        <small>KIRIM</small>
+      </div>
+      <div class="w-action" onclick="showToast('🚧 Segera hadir!')">
+        <span>🔄</span>
+        <small>SWAP</small>
+      </div>
+    </div>
+    <div class="tx-list">
+      <div class="tx-head">RIWAYAT TRANSAKSI</div>
+      <div id="tx-container">
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-icon earn">⛏️</div>
+            <div class="tx-desc"><strong>Mining Reward</strong><small>Hari ini</small></div>
+          </div>
+          <div class="tx-amount plus">+250</div>
+        </div>
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-icon boost">⚡</div>
+            <div class="tx-desc"><strong>Beli Boost</strong><small>Kemarin</small></div>
+          </div>
+          <div class="tx-amount minus">-500</div>
+        </div>
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-icon earn">🎁</div>
+            <div class="tx-desc"><strong>Bonus Referral</strong><small>2 hari lalu</small></div>
+          </div>
+          <div class="tx-amount plus">+1000</div>
+        </div>
+        <div style="text-align:center;color:var(--muted);font-size:.8rem;padding:10px 0">Tidak ada lagi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BOOSTS VIEW ===== -->
+  <div class="view" id="view-boosts">
+    <div class="page-title">⚡ UPGRADE &amp; BOOST</div>
+    <div class="boost-grid" id="boost-grid">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ===== TASKS VIEW ===== -->
+  <div class="view" id="view-tasks">
+    <div class="page-title">📋 TUGAS &amp; MISI</div>
+    <div class="task-section">HARIAN</div>
+    <div id="daily-tasks"></div>
+    <div class="task-section" style="margin-top:6px">SPESIAL</div>
+    <div id="special-tasks"></div>
+  </div>
+
+  <!-- ===== FRIENDS VIEW ===== -->
+  <div class="view" id="view-friends">
+    <div class="ref-hero">
+      <div style="font-size:2.5rem">👥</div>
+      <h2>Ajak Teman, Dapat Bonus!</h2>
+      <p>Kamu dapat <strong style="color:var(--orange)">1.000 GPC</strong> untuk setiap teman yang bergabung via link kamu.</p>
+    </div>
+    <div class="ref-code-box">
+      <div style="font-family:'Orbitron',sans-serif;font-size:.65rem;letter-spacing:2px;color:var(--muted)">KODE REFERRAL</div>
+      <div class="ref-code-row">
+        <div class="ref-code" id="ref-code">GUPPY-XXXX</div>
+        <button class="btn-copy" onclick="copyRef()">SALIN</button>
+      </div>
+      <button class="btn-invite" onclick="inviteFriend()">🔗 BAGIKAN LINK</button>
+    </div>
+    <div class="friends-list">
+      <div class="tx-head">TEMAN BERGABUNG (<span id="friend-count">3</span>)</div>
+      <div id="friends-container">
+        <div class="friend-item">
+          <div class="friend-left"><div class="friend-av">A</div><div class="friend-info"><strong>Andi Pratama</strong><small>Bergabung 2 hari lalu</small></div></div>
+          <div class="friend-earn">+1.000 GPC</div>
+        </div>
+        <div class="friend-item">
+          <div class="friend-left"><div class="friend-av">S</div><div class="friend-info"><strong>Siti Rahma</strong><small>Bergabung 5 hari lalu</small></div></div>
+          <div class="friend-earn">+1.000 GPC</div>
+        </div>
+        <div class="friend-item">
+          <div class="friend-left"><div class="friend-av">B</div><div class="friend-info"><strong>Budi Santoso</strong><small>Bergabung 1 minggu lalu</small></div></div>
+          <div class="friend-earn">+1.000 GPC</div>
+        </div>
+      </div>
+    </div>
+    <!-- Mini Leaderboard -->
+    <div class="friends-list">
+      <div class="tx-head">🏆 TOP MINERS</div>
+      <div id="leaderboard"></div>
+    </div>
+  </div>
+
+</div><!-- end content -->
+
+<!-- BOTTOM NAV -->
+<nav class="nav">
+  <button class="nav-item active" onclick="showView('mine')" id="nav-mine">
+    <span>⛏️</span><small>MINE</small>
+  </button>
+  <button class="nav-item" onclick="showView('wallet')" id="nav-wallet">
+    <span>💰</span><small>WALLET</small>
+  </button>
+  <button class="nav-item" onclick="showView('boosts')" id="nav-boosts">
+    <span>⚡</span><small>BOOST</small>
+  </button>
+  <button class="nav-item" onclick="showView('tasks')" id="nav-tasks">
+    <span>📋</span><small>TUGAS</small>
+  </button>
+  <button class="nav-item" onclick="showView('friends')" id="nav-friends">
+    <span>👥</span><small>TEMAN</small>
+  </button>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- WITHDRAW MODAL -->
+<div class="modal-bg" id="modal-withdraw">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('modal-withdraw')">✕</button>
+    <h3>📤 WITHDRAW</h3>
+    <div class="field">
+      <label>Jumlah (GPC)</label>
+      <input type="number" id="wd-amount" placeholder="Min. 1000 GPC"/>
+    </div>
+    <div class="field">
+      <label>Alamat TON / USDT</label>
+      <input type="text" id="wd-address" placeholder="EQ..."/>
+    </div>
+    <div style="background:var(--card2);border-radius:10px;padding:10px 12px;font-size:.78rem;color:var(--muted);line-height:1.6">
+      Minimal withdraw: <span style="color:var(--orange)">1.000 GPC</span><br/>
+      Rate: 1.000 GPC = <span style="color:var(--orange)">$0.10</span>
+    </div>
+    <button class="btn-primary" onclick="submitWithdraw()">PROSES WITHDRAW</button>
+  </div>
+</div>
+
+<!-- SEND MODAL -->
+<div class="modal-bg" id="modal-send">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('modal-send')">✕</button>
+    <h3>↗️ KIRIM KOIN</h3>
+    <div class="field">
+      <label>Username Penerima</label>
+      <input type="text" id="send-user" placeholder="@username"/>
+    </div>
+    <div class="field">
+      <label>Jumlah (GPC)</label>
+      <input type="number" id="send-amount" placeholder="Jumlah koin"/>
+    </div>
+    <button class="btn-primary" onclick="submitSend()">KIRIM SEKARANG</button>
+  </div>
+</div>
+
+<script>
+// ========== STATE ==========
+const tg = window.Telegram?.WebApp;
+if(tg){ tg.expand(); tg.setHeaderColor('#0a0c0f'); tg.setBackgroundColor('#0a0c0f'); }
+
+const tgUser = tg?.initDataUnsafe?.user;
+let state = JSON.parse(localStorage.getItem('guppy_state') || 'null') || {
+  coins: 1250,
+  energy: 500,
+  maxEnergy: 500,
+  perTap: 1,
+  perHour: 120,
+  totalTaps: 0,
+  level: 1,
+  autoMine: false,
+  boosts: [],
+  tasks: {}
+};
+
+const LEVELS = [
+  {min:0,    label:'Pemula'},
+  {min:5000, label:'Penambang'},
+  {min:20000,label:'Pro Miner'},
+  {min:50000,label:'Expert'},
+  {min:100000,label:'Master'},
+  {min:500000,label:'Legend'},
+];
+
+const BOOSTS = [
+  {id:'tap2',   icon:'👊', name:'Tap Power x2',   desc:'Setiap tap = 2 koin',      cost:2000,  lvls:5, effect:()=>{state.perTap=Math.max(state.perTap,2)}},
+  {id:'tap5',   icon:'💥', name:'Tap Power x5',   desc:'Setiap tap = 5 koin',      cost:10000, lvls:5, effect:()=>{state.perTap=Math.max(state.perTap,5)}},
+  {id:'energy2',icon:'⚡', name:'Energy Max x2',  desc:'Energi max jadi 1000',    cost:3000,  lvls:3, effect:()=>{state.maxEnergy=1000;if(state.energy>1000)state.energy=1000}},
+  {id:'auto',   icon:'🤖', name:'Auto Miner',      desc:'Otomatis mining 5 koin/det',cost:5000, lvls:1, effect:()=>{state.autoMine=true}},
+  {id:'regen2', icon:'🔋', name:'Energy Regen x2', desc:'Energi pulih 2x lebih cepat',cost:4000,lvls:3,effect:()=>{}},
+  {id:'bonus',  icon:'🎲', name:'Lucky Bonus',     desc:'10% chance 10x koin per tap',cost:8000,lvls:3,effect:()=>{}},
+];
+
+const DAILY_TASKS = [
+  {id:'d1', icon:'⛏️', name:'Tap 100x Hari Ini',   desc:'Lakukan 100 tap',       reward:500},
+  {id:'d2', icon:'🌅', name:'Login Harian',         desc:'Login setiap hari',     reward:200},
+  {id:'d3', icon:'📢', name:'Share ke Story TG',    desc:'Bagikan ke Telegram',   reward:1000},
+];
+const SPECIAL_TASKS = [
+  {id:'s1', icon:'👥', name:'Ajak 5 Teman',       desc:'Undang 5 teman bergabung', reward:5000},
+  {id:'s2', icon:'⭐', name:'Rate Bintang 5',      desc:'Beri rating di channel',   reward:2000},
+  {id:'s3', icon:'💎', name:'Gabung Channel',      desc:'Follow @guppycoin',        reward:1000},
+  {id:'s4', icon:'🐦', name:'Follow Twitter',      desc:'Follow akun Twitter',      reward:1000},
+];
+
+const LEADERBOARD = [
+  {name:'CryptoKing88', coins:'2.4M', av:'C'},
+  {name:'MinerPro99',   coins:'1.9M', av:'M'},
+  {name:'DigiGold',     coins:'1.5M', av:'D'},
+  {name:'TapMaster',    coins:'1.1M', av:'T'},
+  {name:'GuppyWhale',   coins:'980K', av:'G'},
+];
+
+// ========== INIT ==========
+function init(){
+  // Telegram user info
+  if(tgUser){
+    const initial = (tgUser.first_name||'G')[0].toUpperCase();
+    document.getElementById('user-avatar').textContent = initial;
+    state.refCode = 'GUPPY-' + String(tgUser.id).slice(-4).toUpperCase();
+  } else {
+    state.refCode = state.refCode || 'GUPPY-' + Math.random().toString(36).slice(-4).toUpperCase();
+  }
+  document.getElementById('ref-code').textContent = state.refCode;
+  renderBoosts();
+  renderTasks();
+  renderLeaderboard();
+  updateUI();
+  startEnergyRegen();
+  if(state.autoMine) startAutoMine();
+}
+
+// ========== UI ==========
+function updateUI(){
+  const coins = state.coins.toLocaleString('id-ID');
+  document.getElementById('hdr-bal').textContent = coins;
+  document.getElementById('wallet-bal').textContent = state.coins.toLocaleString('id-ID') + ' ';
+  document.getElementById('wallet-usd').textContent = '$' + (state.coins * 0.0001).toFixed(2);
+  document.getElementById('per-tap').textContent = '+' + state.perTap;
+  document.getElementById('per-hour').textContent = '+' + state.perHour.toLocaleString('id-ID');
+  document.getElementById('total-taps').textContent = state.totalTaps.toLocaleString('id-ID');
+
+  // Level
+  let lv = 0;
+  for(let i=0;i<LEVELS.length;i++) if(state.coins>=LEVELS[i].min) lv=i;
+  state.level = lv+1;
+  document.getElementById('user-level').textContent = state.level;
+  document.getElementById('level-label').textContent = LEVELS[lv].label;
+
+  // Energy
+  const pct = (state.energy / state.maxEnergy) * 100;
+  document.getElementById('energy-fill').style.width = pct + '%';
+  document.getElementById('energy-text').textContent = state.energy + ' / ' + state.maxEnergy;
+
+  // Auto
+  document.getElementById('auto-status').textContent = state.autoMine
+    ? '✅ Aktif — mining otomatis 5/detik'
+    : 'Tidak aktif — beli di Boost';
+
+  saveState();
+}
+
+// ========== TAP ==========
+function handleTap(e){
+  if(state.energy <= 0){ showToast('⚡ Energi habis! Tunggu isi ulang.'); return; }
+  state.energy = Math.max(0, state.energy - 1);
+  state.coins += state.perTap;
+  state.totalTaps++;
+
+  // Float animation
+  const btn = document.getElementById('coin-btn');
+  const rect = btn.getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - 20;
+  const y = (e.touches ? e.touches[0].clientY : e.clientY) - 20;
+  const el = document.createElement('div');
+  el.className = 'tap-float';
+  el.textContent = '+' + state.perTap;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 900);
+
+  // Haptic
+  if(tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+
+  updateUI();
+}
+
+// ========== ENERGY REGEN ==========
+function startEnergyRegen(){
+  setInterval(()=>{
+    const regenRate = state.boosts.includes('regen2') ? 2 : 1;
+    if(state.energy < state.maxEnergy){
+      state.energy = Math.min(state.maxEnergy, state.energy + regenRate);
+      updateUI();
+    }
+  }, 1000);
+}
+
+// ========== AUTO MINE ==========
+let autoInterval = null;
+function startAutoMine(){
+  if(autoInterval) return;
+  autoInterval = setInterval(()=>{
+    state.coins += 5;
+    updateUI();
+  }, 1000);
+}
+
+// ========== VIEWS ==========
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  document.getElementById('content').scrollTop = 0;
+}
+
+// ========== BOOSTS ==========
+function renderBoosts(){
+  const grid = document.getElementById('boost-grid');
+  grid.innerHTML = BOOSTS.map(b=>{
+    const owned = state.boosts.includes(b.id);
+    return `<div class="boost-card ${owned?'owned':''}" onclick="${owned?'':'buyBoost(\''+b.id+'\')'}">
+      <div class="boost-card-icon" style="background:${owned?'var(--gg)':'var(--og2)'};border:1px solid ${owned?'rgba(34,197,94,.3)':'var(--border)'}">
+        ${b.icon}
+      </div>
+      <div class="boost-card-info">
+        <strong>${b.name}</strong>
+        <p>${b.desc}</p>
+        <div class="cost ${owned?'owned-text':''}">${owned?'✅ DIMILIKI':'🪙 '+b.cost.toLocaleString('id-ID')+' GPC'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buyBoost(id){
+  const boost = BOOSTS.find(b=>b.id===id);
+  if(!boost) return;
+  if(state.coins < boost.cost){ showToast('❌ Koin tidak cukup!'); return; }
+  state.coins -= boost.cost;
+  state.boosts.push(id);
+  boost.effect();
+  if(id==='auto') startAutoMine();
+  renderBoosts();
+  updateUI();
+  showToast('✅ '+boost.name+' berhasil dibeli!');
+  if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+}
+
+// ========== TASKS ==========
+function renderTasks(){
+  const daily = document.getElementById('daily-tasks');
+  daily.innerHTML = DAILY_TASKS.map(t=>{
+    const done = !!state.tasks[t.id];
+    return `<div class="task-card ${done?'done':''}" onclick="claimTask('${t.id}')" style="margin-bottom:8px">
+      <div class="task-card-icon">${t.icon}</div>
+      <div class="task-info">
+        <strong>${t.name}</strong>
+        <small>${t.desc}</small>
+      </div>
+      <div class="task-reward">${done?'✅':'+'+t.reward.toLocaleString('id-ID')}</div>
+    </div>`;
+  }).join('');
+  const special = document.getElementById('special-tasks');
+  special.innerHTML = SPECIAL_TASKS.map(t=>{
+    const done = !!state.tasks[t.id];
+    return `<div class="task-card ${done?'done':''}" onclick="claimTask('${t.id}')" style="margin-bottom:8px">
+      <div class="task-card-icon">${t.icon}</div>
+      <div class="task-info">
+        <strong>${t.name}</strong>
+        <small>${t.desc}</small>
+      </div>
+      <div class="task-reward">${done?'✅':'+'+t.reward.toLocaleString('id-ID')}</div>
+    </div>`;
+  }).join('');
+}
+
+function claimTask(id){
+  if(state.tasks[id]) return;
+  const task = [...DAILY_TASKS,...SPECIAL_TASKS].find(t=>t.id===id);
+  if(!task) return;
+  state.tasks[id] = true;
+  state.coins += task.reward;
+  renderTasks();
+  updateUI();
+  showToast('🎉 +'+task.reward.toLocaleString('id-ID')+' GPC diklaim!');
+  if(tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+}
+
+// ========== LEADERBOARD ==========
+function renderLeaderboard(){
+  const lb = document.getElementById('leaderboard');
+  lb.innerHTML = LEADERBOARD.map((u,i)=>`
+    <div class="rank-row">
+      <div class="rank-num ${i<3?'top':'}'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`}</div>
+      <div class="rank-left">
+        <div class="rank-av">${u.av}</div>
+        <div class="rank-info"><strong>${u.name}</strong><small>Level ${6-i}</small></div>
+      </div>
+      <div class="rank-coins">${u.coins}</div>
+    </div>`).join('');
+}
+
+// ========== REF ==========
+function copyRef(){
+  const code = document.getElementById('ref-code').textContent;
+  const link = `https://t.me/GuppyCoinBot?start=${code}`;
+  if(navigator.clipboard){ navigator.clipboard.writeText(link); }
+  showToast('✅ Link disalin!');
+}
+function inviteFriend(){
+  const code = document.getElementById('ref-code').textContent;
+  const link = `https://t.me/GuppyCoinBot?start=${code}`;
+  const text = `⚡ Join GUPPY COIN dan mining koin gratis! Kamu dapat 1.000 GPC bonus pakai link aku:\n${link}`;
+  if(tg) tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`);
+  else showToast('Link: ' + link);
+}
+
+// ========== MODALS ==========
+function openWithdraw(){ document.getElementById('modal-withdraw').classList.add('show'); }
+function openSend(){ document.getElementById('modal-send').classList.add('show'); }
+function openDeposit(){ showToast('🚧 Fitur deposit segera hadir!'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
+function submitWithdraw(){
+  const amt = parseInt(document.getElementById('wd-amount').value);
+  const addr = document.getElementById('wd-address').value.trim();
+  if(!amt||amt<1000){ showToast('❌ Minimal withdraw 1.000 GPC'); return; }
+  if(!addr){ showToast('❌ Masukkan alamat wallet'); return; }
+  if(state.coins < amt){ showToast('❌ Saldo tidak cukup'); return; }
+  state.coins -= amt;
+  closeModal('modal-withdraw');
+  updateUI();
+  showToast('✅ Withdrawal diproses!');
+}
+function submitSend(){
+  const user = document.getElementById('send-user').value.trim();
+  const amt = parseInt(document.getElementById('send-amount').value);
+  if(!user){ showToast('❌ Masukkan username'); return; }
+  if(!amt||amt<1){ showToast('❌ Jumlah tidak valid'); return; }
+  if(state.coins < amt){ showToast('❌ Saldo tidak cukup'); return; }
+  state.coins -= amt;
+  closeModal('modal-send');
+  updateUI();
+  showToast('✅ '+amt.toLocaleString('id-ID')+' GPC dikirim ke '+user);
+}
+
+// Modal close on backdrop click
+document.querySelectorAll('.modal-bg').forEach(bg=>{
+  bg.addEventListener('click', e=>{ if(e.target===bg) bg.classList.remove('show'); });
+});
+
+// ========== TOAST ==========
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ========== SAVE ==========
+function saveState(){
+  try{ localStorage.setItem('guppy_state', JSON.stringify(state)); }catch(e){}
+}
+
+// ========== START ==========
+init();
+</script>
+</body>
+</html>
