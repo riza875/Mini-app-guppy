@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/adsgram-reward.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  }
+}
